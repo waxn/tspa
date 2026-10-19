@@ -8,7 +8,9 @@ from fastapi.testclient import TestClient
 
 from app import auth
 from app.config import get_settings
-from app.db import init_db
+from sqlmodel import SQLModel
+
+from app.db import engine, init_db
 from app.main import app
 
 PASSWORD = "hunter2"
@@ -18,6 +20,7 @@ PASSWORD = "hunter2"
 def _setup(monkeypatch):
     monkeypatch.setattr(get_settings(), "password_hash", auth.hasher.hash(PASSWORD))
     auth._fails.clear()
+    SQLModel.metadata.drop_all(engine)
     init_db()
 
 

@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -10,6 +11,8 @@ from . import auth
 from .api import routers
 from .config import get_settings
 from .db import init_db
+from .events import bus
+from .scheduler import make_scheduler
 
 STATIC = Path(__file__).resolve().parent.parent / "static"
 
@@ -17,7 +20,12 @@ STATIC = Path(__file__).resolve().parent.parent / "static"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    bus.attach_loop(asyncio.get_running_loop())
+    sched = make_scheduler()
+    sched.start()
     yield
+    sched.shutdown(wait=False)
+    bus.attach_loop(None)
 
 
 app = FastAPI(title="tspa", lifespan=lifespan)
@@ -43,6 +51,16 @@ def index(request: Request):
     if not request.session.get("user"):
         return RedirectResponse("/login")
     return FileResponse(STATIC / "index.html")
+
+
+@app.get("/sw.js", include_in_schema=False)
+def service_worker():
+    return FileResponse(STATIC / "sw.js", media_type="text/javascript", headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/manifest.webmanifest", include_in_schema=False)
+def manifest():
+    return FileResponse(STATIC / "manifest.webmanifest", media_type="application/manifest+json")
 
 
 app.mount("/static", StaticFiles(directory=STATIC), name="static")

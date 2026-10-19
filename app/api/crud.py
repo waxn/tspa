@@ -5,6 +5,7 @@ from sqlmodel import Session, SQLModel, select
 
 from ..auth import require_user
 from ..db import get_session
+from ..events import bus
 
 
 def crud_router(prefix: str, model: type[SQLModel], order_by: Any, touch: str | None = None) -> APIRouter:
@@ -23,6 +24,7 @@ def crud_router(prefix: str, model: type[SQLModel], order_by: Any, touch: str | 
         session.add(obj)
         session.commit()
         session.refresh(obj)
+        bus.publish({"type": "changed"})
         return obj
 
     @router.patch("/{item_id}")
@@ -38,6 +40,7 @@ def crud_router(prefix: str, model: type[SQLModel], order_by: Any, touch: str | 
         session.add(obj)
         session.commit()
         session.refresh(obj)
+        bus.publish({"type": "changed"})
         return obj
 
     @router.delete("/{item_id}", status_code=204)
@@ -47,6 +50,7 @@ def crud_router(prefix: str, model: type[SQLModel], order_by: Any, touch: str | 
             raise HTTPException(404)
         session.delete(obj)
         session.commit()
+        bus.publish({"type": "changed"})
 
     return router
 
