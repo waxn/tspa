@@ -71,6 +71,7 @@ docker compose up -d                                                            
 - Optional settings (`TZ`, `OPENROUTER_*`, `VAPID_*`) go in a `.env` file next to `docker-compose.yml`; see `.env.example`.
 - Update: `git pull && docker compose up -d --build`.
 - Backup: `docker run --rm -v tspa_tspa-data:/data -v "$PWD":/out alpine tar czf /out/tspa-backup.tgz -C /data .`
+- If the build fails with `Failed to resolve pypi.org`, Docker's DNS is broken on your machine. The compose file already builds with the host's network and sets DNS for the running container; to fix it properly, put `{ "dns": ["1.1.1.1", "8.8.8.8"] }` in `/etc/docker/daemon.json` and restart Docker.
 - By default it only listens on `127.0.0.1`. That's what you want on your own machine.
 
 ### Putting it online (both houses)

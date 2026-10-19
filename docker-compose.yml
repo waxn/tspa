@@ -1,8 +1,16 @@
 services:
   tspa:
-    build: .
+    build:
+      context: .
+      # use the host's network while building: some machines have broken DNS inside Docker's build
+      # containers ("Failed to resolve pypi.org"). Remove once your Docker daemon's DNS works.
+      network: host
     image: tspa
     restart: unless-stopped
+    # DNS for the running container (OpenRouter, push services); the build uses `network: host` above
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     # localhost only by default. For a server, set TSPA_BIND=0.0.0.0 (and put HTTPS in front, see README).
     ports:
       - "${TSPA_BIND:-127.0.0.1}:8000:8000"
