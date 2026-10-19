@@ -15,6 +15,7 @@ dependencies = [
     "dateparser>=1.2",
     "pywebpush>=2.0",
     "openai>=1.40",
+    "tzdata",
 ]
 
 [dependency-groups]

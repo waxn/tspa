@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from pwdlib import PasswordHash
 
-from .config import get_settings
+from .config import stored_password_hash
 
 hasher = PasswordHash.recommended()
 router = APIRouter()
@@ -30,7 +30,7 @@ def login(request: Request, password: str = Form(...)):
     ip = request.client.host if request.client else "?"
     if _throttled(ip):
         raise HTTPException(status_code=429, detail="too many attempts, wait a few minutes")
-    stored = get_settings().password_hash
+    stored = stored_password_hash()
     if not stored or not hasher.verify(password, stored):
         _fails.setdefault(ip, []).append(time.time())
         return RedirectResponse("/login?error=1", status_code=303)

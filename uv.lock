@@ -1947,6 +1947,7 @@ dependencies = [
     { name = "python-multipart" },
     { name = "pywebpush" },
     { name = "sqlmodel" },
+    { name = "tzdata" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -1969,6 +1970,7 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.9" },
     { name = "pywebpush", specifier = ">=2.0" },
     { name = "sqlmodel", specifier = ">=0.0.22" },
+    { name = "tzdata" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30" },
 ]
 

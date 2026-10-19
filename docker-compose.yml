@@ -1,0 +1,16 @@
+services:
+  tspa:
+    build: .
+    image: tspa
+    restart: unless-stopped
+    # localhost only by default. For a server, set TSPA_BIND=0.0.0.0 (and put HTTPS in front, see README).
+    ports:
+      - "${TSPA_BIND:-127.0.0.1}:8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - tspa-data:/data
+
+volumes:
+  tspa-data:

@@ -56,7 +56,32 @@ type in that case is sent to OpenRouter.
 uv run pytest                 # unit + API + real-browser tests (the browser test skips if Chromium is missing)
 ```
 
+## Docker (nothing to install but Docker)
+
+```bash
+git clone https://github.com/waxn/tspa.git && cd tspa
+git checkout claude/great-cerf-ybhcgd
+docker compose build
+docker compose run --rm tspa python -m app.set_password --file /data/password_hash   # choose your password
+docker compose up -d                                                                  # http://localhost:8000
+```
+
+- Your data (database, password hash, auto-generated secret key) lives in the `tspa-data` Docker volume and survives
+  rebuilds and `docker compose down`. **`docker compose down -v` deletes it.**
+- Optional settings (`TZ`, `OPENROUTER_*`, `VAPID_*`) go in a `.env` file next to `docker-compose.yml`; see `.env.example`.
+- Update: `git pull && docker compose up -d --build`.
+- Backup: `docker run --rm -v tspa_tspa-data:/data -v "$PWD":/out alpine tar czf /out/tspa-backup.tgz -C /data .`
+- By default it only listens on `127.0.0.1`. That's what you want on your own machine.
+
+### Putting it online (both houses)
+
+Not set up yet; the options, easiest first:
+1. **Tailscale** on the host + your devices: private, free, no domain. Run compose on a machine that's always on, set
+   `TSPA_BIND=0.0.0.0`, and open `http://<tailscale-name>:8000`. Notifications need HTTPS though; `tailscale serve` gives you that.
+2. **Cheap VPS + Caddy** (automatic HTTPS, needs a domain). Set `HTTPS_ONLY=true` in `.env` so the login cookie is HTTPS-only.
+
+Don't expose it to the internet over plain HTTP: your password would cross the network in the clear.
+
 ## Not done yet
 
-Docker/hosting, HTTPS (`https_only` cookie flag in `app/main.py`), and database migrations (tables are created on startup;
-add Alembic before storing data you can't lose).
+Database migrations (tables are created on startup; add Alembic before storing data you can't lose) and a one-command HTTPS setup.

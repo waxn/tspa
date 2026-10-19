@@ -33,7 +33,7 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=get_settings().secret_key,
     same_site="strict",
-    https_only=False,  # set True behind HTTPS in production
+    https_only=get_settings().https_only,
     max_age=60 * 60 * 24 * 30,
 )
 app.include_router(auth.router)
