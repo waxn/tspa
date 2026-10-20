@@ -1,5 +1,5 @@
 from ..models import Note, Project, Reminder, StreamEntry, Task
-from . import quickadd, system
+from . import capture, system, widgets
 from .crud import crud_router
 
 routers = [
@@ -8,6 +8,7 @@ routers = [
     crud_router("/api/notes", Note, Note.updated_at.desc(), touch="updated_at"),
     crud_router("/api/stream", StreamEntry, StreamEntry.created_at.desc()),
     crud_router("/api/reminders", Reminder, Reminder.fire_at),
-    quickadd.router,
+    capture.router,
+    widgets.router,
     system.router,
 ]

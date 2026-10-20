@@ -13,6 +13,12 @@ export function h(tag, attrs = {}, ...kids) {
   return e;
 }
 
+/** replaceChildren that skips null/false (a bare null would render as the text "null"). */
+export function fill(el, ...kids) {
+  el.replaceChildren(...kids.flat().filter((k) => k != null && k !== false));
+  return el;
+}
+
 const parts = (d, opts) =>
   Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: TZ, hourCycle: "h23", ...opts }).formatToParts(d).map((p) => [p.type, p.value]));
 const FULL = { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" };
@@ -63,7 +69,9 @@ export function fromLocalInput(v) {
 }
 
 export function toast(msg, cls = "") {
+  const box = document.getElementById("toasts");
   const t = h("div", { class: "toast " + cls }, msg);
-  document.getElementById("toasts").append(t);
-  setTimeout(() => t.remove(), 5000);
+  box.append(t);
+  while (box.children.length > 3) box.firstChild.remove(); // newest few only, never a wall of them
+  setTimeout(() => t.remove(), 4500);
 }

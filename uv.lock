@@ -1940,6 +1940,7 @@ dependencies = [
     { name = "apscheduler" },
     { name = "dateparser" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "itsdangerous" },
     { name = "openai" },
     { name = "pwdlib", extra = ["argon2"] },
@@ -1953,7 +1954,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "httpx" },
     { name = "playwright" },
     { name = "pytest" },
 ]
@@ -1963,6 +1963,7 @@ requires-dist = [
     { name = "apscheduler", specifier = ">=3.10,<4" },
     { name = "dateparser", specifier = ">=1.2" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "itsdangerous", specifier = ">=2.2" },
     { name = "openai", specifier = ">=1.40" },
     { name = "pwdlib", extras = ["argon2"], specifier = ">=0.2" },
@@ -1976,7 +1977,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "httpx", specifier = ">=0.27" },
     { name = "playwright", specifier = ">=1.47" },
     { name = "pytest", specifier = ">=8" },
 ]

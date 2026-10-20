@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from .db import engine
 from .events import bus
 from .models import Reminder, utcnow
+from .api.widgets import poll_all
 from .push import send_push
 
 
@@ -31,4 +32,5 @@ async def check_due() -> int:
 def make_scheduler() -> AsyncIOScheduler:
     sched = AsyncIOScheduler()
     sched.add_job(check_due, "interval", seconds=10, max_instances=1, coalesce=True, next_run_time=utcnow())
+    sched.add_job(poll_all, "interval", seconds=30, max_instances=1, coalesce=True, next_run_time=utcnow())
     return sched

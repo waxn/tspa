@@ -1,5 +1,5 @@
 import { api } from "./api.js";
-import { reloadSoon, load } from "./store.js";
+import { loadWidgetState, reloadSoon, load } from "./store.js";
 import { toast } from "./util.js";
 
 let reg = null, cfg = {};
@@ -51,6 +51,7 @@ export async function init(config, onState) {
   es.onmessage = (m) => {
     const ev = JSON.parse(m.data);
     if (ev.type === "changed") reloadSoon();
+    else if (ev.type === "widgets") loadWidgetState().catch(() => {});
     else if (ev.type === "reminder") popup(ev);
   };
   onState?.();

@@ -1,8 +1,85 @@
 # tspa
 
-A btop/glances-style productivity app that runs in the browser: todos, assignments with due dates,
-projects, notes, a stream-of-consciousness log, and silent popup reminders. Keyboard-first, fully clickable.
-Backend: FastAPI + SQLite. Frontend: plain JS, no build step.
+A keyboard-first memory tool that runs in the browser. Capture anything in two keystrokes, write notes with
+Notion-style shortcuts, keep tasks and silent reminders, and watch your self-hosted services on a btop-style dashboard.
+
+Backend: FastAPI + SQLite. Frontend: plain JavaScript modules, no build step, no external fonts or scripts (so it
+loads on a locked-down school network). Dark by default; light theme in the `/` palette.
+
+## The idea: low friction
+
+Everything starts with **Space**. Press it anywhere, type, press Enter. Plain thoughts land in the **inbox**; anything
+with a clear signal becomes the right thing immediately. You sort the inbox later, with one key per thought.
+
+| type | becomes |
+|---|---|
+| `call mom in 30m` / `dentist tomorrow 8am` | silent reminder |
+| `bio lab due fri 5pm #bio !!` | assignment, project `bio`, high priority |
+| `buy milk tomorrow` | todo due tomorrow |
+| `n: idea for a flight tracker` | note |
+| `p: Cessna build` | project |
+| `my flight tracker could use ADS-B feeds…` (anything else) | a **thought** in the inbox |
+
+The capture bar shows what it will do before you press Enter. `Tab` forces a type. Closing it keeps your text, so
+nothing is lost. `u` undoes the last thing you did (capture, delete, done, sort). Dates are US month/day in `TZ`.
+
+## Keys
+
+| | |
+|---|---|
+| `Space` | capture |
+| `/` | search and jump: notes, **headings inside notes**, tasks, thoughts, commands (`#` headings only, `>` commands) |
+| `1`–`5` | home · notes · tasks · inbox · services |
+| `↑↓←→` or `hjkl` | move (between panels on home) · `Enter` open · `x` done · `e` edit · `d` delete · `n` new |
+| `Esc` | close / leave a text box / go home |
+| `?` | full key list |
+
+The mouse and touch work everywhere too (every row, button and tab is clickable; phones get a `+` button).
+Dates in forms accept plain words: `fri 5pm`, `in 2 hours`, `10/24`.
+
+## Notes
+
+A block editor that saves plain Markdown. `#` `##` `###` headings, `-` bullets, `1.` numbers, `[]` to-dos, `>` quotes,
+` ``` ` code, `---` divider, `/` for a block menu, `Tab` to indent, `Alt+↑↓` to move a block, `Ctrl+B/I/E` for
+bold/italic/code, `Ctrl+Z` undo. The block you are in shows raw Markdown; the rest render. Headings fill the outline
+on the right and are searchable from anywhere with `/` then `#`. Notes autosave; `Esc` returns to the note list.
+
+## Services dashboard
+
+Press `5`, then `n`. Two kinds of tile:
+
+- **up / down**: HTTP check with response time and a history strip. A red `N down` badge appears in the header.
+- **numbers from a JSON API**: pick values by path (`photos`, `usage.bytes`) and format them (`num`, `bytes`, `pct`, `dur`).
+  The form has a "test" button that fetches your URL and lists every value it finds, so you click instead of guessing.
+  There is an Immich preset (`/api/server/statistics` with an `x-api-key` header).
+
+The **server** makes the requests every 30 s, so API keys never reach the browser, but tspa must be able to reach your
+services. Run it on the same network (or use the service's LAN address). `localhost` inside Docker means the container.
+Headers (API keys) are stored as plain text in the database.
+
+## AI (optional)
+
+With an AI configured, each captured thought is summarised in the background (a short headline, tags) and, when it clearly
+is a task, reminder or note, gets a suggestion chip. `Enter` in the inbox accepts it. Nothing is ever changed without you.
+Works with any OpenAI-compatible endpoint: OpenRouter (use a `:free` model), or Ollama / LM Studio on your own machine, in
+which case no text leaves it. Set `AI_API_KEY` and `AI_MODEL` (and `AI_BASE_URL` for self-hosted). Only the thought's text and your
+project names are sent. Capped at `AI_DAILY_LIMIT` calls per day (default 40). The app works fully without it.
+
+## Phone
+
+It is a PWA today: open it on Android, "Add to Home screen". Reminders arrive as silent notifications (Web Push, see below).
+Installed, it appears in the Android share sheet ("share to tspa" opens the capture bar with the text) and has a "Capture"
+shortcut on long-press.
+
+For automation or a future native app there is a token API: set `API_TOKEN` (24+ characters) and
+`curl -H "Authorization: Bearer $API_TOKEN" -H 'content-type: application/json' -d '{"text":"call mom in 2h"}' https://your-host/api/capture`.
+The same token works on every `/api/*` endpoint, so an Android app can be built against the API as it is.
+
+### Silent notifications
+
+Click the bell in the header. While a tab is open, reminders pop up instantly (server-sent events). For popups when the tab
+is **closed**, generate Web Push keys (`uv run python -m app.gen_vapid`), put them in `.env`, and click the bell again on
+each device. Needs `localhost` or HTTPS. Notifications are sent with `silent: true`; your OS settings can still override that.
 
 ## Run (dev)
 
@@ -14,53 +91,13 @@ uv run python -m app.set_password        # paste the PASSWORD_HASH='...' line in
 uv run uvicorn app.main:app --reload     # http://localhost:8000
 ```
 
-Run **one** worker only (the reminder scheduler lives in the process).
+Run **one** worker only (the reminder and service pollers live in the process). Existing databases are upgraded
+automatically on startup (new columns are added; nothing is dropped).
 
-## Quick add (`a` or `Space`)
-
-| type | becomes |
-|---|---|
-| `Bio project due 10/24` | assignment due Oct 24 (end of day) |
-| `english paper due friday 5pm #eng !!` | assignment, project `eng`, priority 2 |
-| `va state test 2hr` | silent reminder in 2 hours (`30m`, `1h30m`, `in 2 hours`) |
-| `call mom at 3pm` / `dentist tomorrow 8am` | reminder at that time |
-| `buy milk tomorrow` | todo due tomorrow |
-| `n: idea…` / `i: thought` / `> thought` | note / stream entry / stream entry |
-| `p: Cessna build` | new project |
-
-`Tab` in the bar forces a type. The preview shows exactly what will be created before you press Enter.
-Dates are read as US month/day in `TZ` (default `America/New_York`). First word matching an existing project name attaches it.
-
-## Keys
-
-`a` add · `1–6` panels · `Tab` next · `j/k` move · `Enter/e` edit · `x` done/pin/dismiss · `n` new · `d` delete ·
-`/` filter · `h` show done · `z` zoom · `i` stream · `?` help. Everything on screen is also clickable (double-click edits).
-
-## Notifications (silent)
-
-- Click `notify: off` in the header. While a tab is open, reminders pop up instantly (server-sent events).
-- For popups when the tab is **closed**, generate Web Push keys and put them in `.env`:
-  `uv run python -m app.gen_vapid`, then re-click the notify button on each device.
-- Needs `localhost` or HTTPS. iPhone: add the site to the Home Screen first. Notifications are sent with `silent: true`,
-  but your OS settings can still override that.
-
-## AI fallback (optional)
-
-Set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` (a `:free` model id). Only used when the rule parser is unsure and you press Enter —
-the preview then shows `[ai]` and you press Enter again to accept. Capped at 40 calls/day (free accounts get ~50). The text you
-type in that case is sent to OpenRouter.
-
-## Tests
-
-```bash
-uv run pytest                 # unit + API + real-browser tests (the browser test skips if Chromium is missing)
-```
-
-## Docker (nothing to install but Docker)
+## Docker
 
 ```bash
 git clone https://github.com/waxn/tspa.git && cd tspa
-git checkout claude/great-cerf-ybhcgd
 docker compose build
 docker compose run --rm tspa python -m app.set_password --file /data/password_hash   # choose your password
 docker compose up -d                                                                  # http://localhost:8000
@@ -68,21 +105,35 @@ docker compose up -d                                                            
 
 - Your data (database, password hash, auto-generated secret key) lives in the `tspa-data` Docker volume and survives
   rebuilds and `docker compose down`. **`docker compose down -v` deletes it.**
-- Optional settings (`TZ`, `OPENROUTER_*`, `VAPID_*`) go in a `.env` file next to `docker-compose.yml`; see `.env.example`.
+- Optional settings (`TZ`, `AI_*`, `API_TOKEN`, `VAPID_*`) go in a `.env` file next to `docker-compose.yml`; see `.env.example`.
 - Update: `git pull && docker compose up -d --build`.
 - Backup: `docker run --rm -v tspa_tspa-data:/data -v "$PWD":/out alpine tar czf /out/tspa-backup.tgz -C /data .`
 - If the build fails with `Failed to resolve pypi.org`, Docker's DNS is broken on your machine. The compose file already builds with the host's network and sets DNS for the running container; to fix it properly, put `{ "dns": ["1.1.1.1", "8.8.8.8"] }` in `/etc/docker/daemon.json` and restart Docker.
 - By default it only listens on `127.0.0.1`. That's what you want on your own machine.
 
-### Putting it online (both houses)
+### Using it from your school computer
 
-Not set up yet; the options, easiest first:
-1. **Tailscale** on the host + your devices: private, free, no domain. Run compose on a machine that's always on, set
-   `TSPA_BIND=0.0.0.0`, and open `http://<tailscale-name>:8000`. Notifications need HTTPS though; `tailscale serve` gives you that.
-2. **Cheap VPS + Caddy** (automatic HTTPS, needs a domain). Set `HTTPS_ONLY=true` in `.env` so the login cookie is HTTPS-only.
+The browser on that machine has to reach tspa, so it must be online somewhere. You can't install VPN software on a school
+computer, so Tailscale (which needs a client on each device) will not work there. Realistic options:
 
-Don't expose it to the internet over plain HTTP: your password would cross the network in the clear.
+1. **Cloudflare Tunnel** (free, no open ports, HTTPS included) or a **VPS + Caddy** (needs a domain). Set `HTTPS_ONLY=true`.
+2. Either way, `TSPA_BIND=0.0.0.0` is only needed if something other than the same machine connects directly.
 
-## Not done yet
+Don't expose it over plain HTTP: your password would cross the network in the clear. There is a login throttle (5 wrong
+tries per 5 minutes per address), but use a long password. School networks sometimes block unfamiliar domains; test the URL
+at school before relying on it.
 
-Database migrations (tables are created on startup; add Alembic before storing data you can't lose) and a one-command HTTPS setup.
+## Tests
+
+```bash
+uv run pytest        # API + parser + a real-browser suite that drives the keyboard (skips if Chromium is missing)
+```
+
+## Known limits
+
+- One user, one password. Two devices editing the **same note** at the same moment: the last save wins (an idle device
+  picks up the other's changes automatically).
+- All notes are loaded into the browser at startup. Fine for thousands of short notes; not designed for a huge archive.
+- Service history is kept in memory and resets when the server restarts.
+- No schema migrations beyond adding columns. Back up the volume before big upgrades.
+- Android: it is a PWA, not a native app yet.

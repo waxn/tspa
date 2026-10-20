@@ -13,8 +13,14 @@ class Settings(BaseSettings):
     https_only: bool = False  # set true when served over HTTPS
     tz: str = "America/New_York"
     database_url: str = "sqlite:///./tspa.db"
-    openrouter_api_key: str = ""
+    # AI is optional. Any OpenAI-compatible endpoint works (OpenRouter, Ollama, LM Studio, ...).
+    ai_base_url: str = "https://openrouter.ai/api/v1"
+    ai_api_key: str = ""
+    ai_model: str = ""
+    ai_daily_limit: int = 40
+    openrouter_api_key: str = ""  # older names, still honoured
     openrouter_model: str = ""
+    api_token: str = ""  # bearer token for the phone/automation (>= 24 chars or it is ignored)
     vapid_public_key: str = ""
     vapid_private_key: str = ""
     vapid_subject: str = "mailto:you@example.com"

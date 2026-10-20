@@ -1,41 +1,38 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>tspa</title>
-<meta name="theme-color" content="#0d1117">
+<meta name="theme-color" content="#0b0f14">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap">
-<link rel="stylesheet" href="/static/css/tui.css">
+<link rel="stylesheet" href="/static/css/app.css">
+<script>try{var t=localStorage.getItem("tspa.theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
 <header id="top">
   <span class="brand">tspa</span>
-  <span id="clock" class="dim"></span>
+  <nav id="tabs">
+    <a href="#/home" data-v="home"><b>1</b>home</a>
+    <a href="#/notes" data-v="notes"><b>2</b>notes</a>
+    <a href="#/tasks" data-v="tasks"><b>3</b>tasks</a>
+    <a href="#/inbox" data-v="inbox"><b>4</b>inbox<i id="inbox-count"></i></a>
+    <a href="#/services" data-v="services"><b>5</b>services</a>
+  </nav>
   <span class="spacer"></span>
-  <button id="filterchip" class="chip" hidden title="clear filter"></button>
-  <span id="overdue" class="chip"></span>
-  <span id="upcoming" class="chip"></span>
-  <button id="notifybtn" class="chip" title="toggle silent popup notifications">notify: off</button>
-  <button id="logoutbtn" class="chip" title="log out">logout</button>
+  <button id="overdue" class="chip bad" hidden></button>
+  <button id="down" class="chip bad" hidden></button>
+  <span id="clock" class="dim"></span>
+  <button id="searchbtn" class="chip" title="search (/)">search <kbd>/</kbd></button>
+  <button id="capbtn" class="chip on" title="capture (Space)">capture <kbd>Space</kbd></button>
+  <button id="notifybtn" class="chip" title="notifications">🔕</button>
+  <button id="helpbtn" class="chip" title="help (?)">?</button>
 </header>
-
-<main id="grid">
-  <section class="panel" id="p-todos" data-panel="todos"><h2 class="ptitle"><b>1</b>todos</h2><span class="pmeta"></span><div class="list"></div></section>
-  <section class="panel" id="p-due" data-panel="due"><h2 class="ptitle"><b>2</b>due</h2><span class="pmeta"></span><div class="list"></div></section>
-  <section class="panel" id="p-projects" data-panel="projects"><h2 class="ptitle"><b>3</b>projects</h2><span class="pmeta"></span><div class="list"></div></section>
-  <section class="panel" id="p-notes" data-panel="notes"><h2 class="ptitle"><b>4</b>notes</h2><span class="pmeta"></span><div class="list"></div></section>
-  <section class="panel" id="p-stream" data-panel="stream"><h2 class="ptitle"><b>5</b>stream</h2><span class="pmeta"></span>
-    <form id="sform" class="sform"><span class="accent">&gt;</span><input id="sinput" autocomplete="off" placeholder="write anything… (i)"></form>
-    <div class="list"></div></section>
-  <section class="panel" id="p-reminders" data-panel="reminders"><h2 class="ptitle"><b>6</b>reminders</h2><span class="pmeta"></span><div class="list"></div></section>
-</main>
-
+<div id="view"></div>
 <footer id="hints"></footer>
-<div id="toasts" aria-live="polite"></div>
-<script type="module" src="/static/js/app.js"></script>
+<button id="fab" title="capture" aria-label="capture">+</button>
+<div id="toasts"></div>
+<script type="module" src="/static/js/main.js"></script>
 </body>
 </html>

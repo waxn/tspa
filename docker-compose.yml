@@ -7,7 +7,7 @@ services:
       network: host
     image: tspa
     restart: unless-stopped
-    # DNS for the running container (OpenRouter, push services); the build uses `network: host` above
+    # DNS for the running container (AI provider, push services, your own services by name); the build uses `network: host` above
     dns:
       - 1.1.1.1
       - 8.8.8.8

@@ -38,9 +38,15 @@ class Note(SQLModel, table=True):
 
 
 class StreamEntry(SQLModel, table=True):
+    """A captured thought. `triaged` flips once it has been sorted (or dismissed) out of the inbox."""
+
     id: int | None = Field(default=None, primary_key=True)
     body: str
     created_at: datetime = Field(default_factory=utcnow)
+    summary: str = ""  # AI headline, filled in after capture
+    tags: str = ""  # space-separated, AI-suggested
+    suggest: str = ""  # JSON: what the AI thinks this should become
+    triaged: bool = False
 
 
 class Reminder(SQLModel, table=True):
@@ -56,3 +62,15 @@ class PushSubscription(SQLModel, table=True):
     endpoint: str = Field(index=True, unique=True)
     p256dh: str
     auth: str
+
+
+class Widget(SQLModel, table=True):
+    """A dashboard tile for a self-hosted service. `kind`: status (up/down + latency) or stat (numbers from a JSON API)."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    kind: str = "status"
+    url: str
+    headers: str = "{}"  # JSON object, e.g. {"x-api-key": "..."}
+    fields: str = "[]"  # JSON list of {label, path, fmt, suffix} for kind=stat
+    pos: int = 0
